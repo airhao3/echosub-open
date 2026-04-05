@@ -12,11 +12,11 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy requirements file and install dependencies into the venv
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements_lightweight.txt .
+RUN pip install --no-cache-dir -r requirements_lightweight.txt
 
-# Install packages that were missing from requirements.txt to fix build issues
-RUN pip install --no-cache-dir email-validator psycopg2-binary python-multipart
+# Install additional runtime dependencies
+RUN pip install --no-cache-dir email-validator python-multipart json-repair openai httpx
 
 # --- Stage 2: Final application image ---
 FROM python:3.11-slim
