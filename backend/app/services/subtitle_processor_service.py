@@ -225,7 +225,9 @@ class SubtitleProcessorService:
                     if not text_val:
                         continue
 
-                    parts = self._split_by_sentence_punct(text_val, start_time, end_time)
+                    source_text = str(seg.get('text', '')).strip()
+                    seg_words = seg.get('words', [])
+                    parts = self._split_by_sentence_punct(text_val, start_time, end_time, source_text, seg_words)
 
                     for s, e, t in parts:
                         t = t.rstrip('.,;:!?…。，；：！？、')
@@ -318,8 +320,10 @@ class SubtitleProcessorService:
             end = float(seg.get('end', 0.0))
 
             # Split by sentence-ending punctuation in the translated text
-            # This handles cases where LLM merges multiple sentences
-            sub_parts = self._split_by_sentence_punct(text_content, start, end)
+            # Use Whisper word timestamps for precise time boundaries
+            source_text = str(seg.get('text', '')).strip()
+            seg_words = seg.get('words', [])
+            sub_parts = self._split_by_sentence_punct(text_content, start, end, source_text, seg_words)
 
             for s, e, text in sub_parts:
                 # Strip trailing punctuation from each subtitle
@@ -336,39 +340,88 @@ class SubtitleProcessorService:
 
         return "\n".join(srt_lines)
 
-    def _split_by_sentence_punct(self, text: str, start: float, end: float) -> list:
+    def _split_by_sentence_punct(self, text: str, start: float, end: float,
+                                source_text: str = '',
+                                words: list = None) -> list:
         """
-        Split text by sentence-ending punctuation, distribute time proportionally.
-        Each resulting part is a complete sentence.
-        If no punctuation found, returns the original as-is.
+        Split translated text by punctuation.
+        Time is determined by Whisper word timestamps — NOT by character ratio.
+
+        When source text and word timestamps are available:
+        1. Split source at same punctuation points
+        2. Count words per source part
+        3. Map word timestamps to find exact split time
         """
         import re
-        # Split at all punctuation boundaries: 。！？，、；.!?,;: followed by optional space
+        # Split translated text at punctuation boundaries
         parts = re.split(r'(?<=[。！？，、；.!?,;:])\s*', text)
         parts = [p.strip() for p in parts if p.strip()]
 
         if len(parts) <= 1:
-            # No split needed, but check duration for long subtitles
             duration = end - start
             if duration > self.MAX_SUBTITLE_DURATION:
                 return self._split_long_subtitle(text, start, end)
             return [(start, end, text)]
 
-        # Distribute time proportionally by character count
-        total_chars = sum(len(p) for p in parts)
-        if total_chars == 0:
-            return [(start, end, text)]
+        # Strategy 1: Use word timestamps for precise split
+        if words and source_text:
+            src_parts = re.split(r'(?<=[.!?,;:])\s*', source_text)
+            src_parts = [p.strip() for p in src_parts if p.strip()]
 
+            if len(src_parts) == len(parts):
+                # Count words per source part to find split word index
+                result = []
+                word_idx = 0
+                for i, (src_part, tgt_part) in enumerate(zip(src_parts, parts)):
+                    src_word_count = len(src_part.split())
+                    part_start_idx = word_idx
+                    word_idx += src_word_count
+
+                    # Get time from word timestamps
+                    if part_start_idx < len(words):
+                        t_start = words[part_start_idx].get('start', start)
+                    else:
+                        t_start = start
+
+                    if word_idx - 1 < len(words):
+                        t_end = words[word_idx - 1].get('end', end)
+                    else:
+                        t_end = end
+
+                    # Last part always ends at segment end
+                    if i == len(parts) - 1:
+                        t_end = end
+
+                    result.append((t_start, t_end, tgt_part))
+                return result
+
+        # Strategy 2: Use source word count ratio (no word timestamps)
+        if source_text:
+            src_parts = re.split(r'(?<=[.!?,;:])\s*', source_text)
+            src_parts = [p.strip() for p in src_parts if p.strip()]
+
+            if len(src_parts) == len(parts):
+                total_words = sum(len(p.split()) for p in src_parts)
+                if total_words > 0:
+                    result = []
+                    t = start
+                    duration = end - start
+                    for i, (src_part, tgt_part) in enumerate(zip(src_parts, parts)):
+                        ratio = len(src_part.split()) / total_words
+                        part_end = t + duration * ratio if i < len(parts) - 1 else end
+                        result.append((t, part_end, tgt_part))
+                        t = part_end
+                    return result
+
+        # Fallback: equal time distribution
+        duration = end - start
+        part_dur = duration / len(parts)
         result = []
         t = start
-        duration = end - start
         for i, part in enumerate(parts):
-            ratio = len(part) / total_chars
-            part_dur = duration * ratio
             part_end = t + part_dur if i < len(parts) - 1 else end
             result.append((t, part_end, part))
             t = part_end
-
         return result
 
     def _split_long_subtitle(self, text: str, start: float, end: float) -> list:
