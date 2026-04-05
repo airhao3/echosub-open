@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EchoSub 主题设计方案预览</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+  :root {
+    /* ===== 新方案设计令牌 ===== */
+
+    /* 主色 - 中性暖灰，不使用蓝色 */
+    --new-primary: #404040;
+    --new-primary-light: #737373;
+    --new-primary-dark: #262626;
+    --new-primary-50: #fafafa;
+    --new-primary-100: #f5f5f5;
+
+    /* 辅助色 - 柔和的青绿 */
+    --new-secondary: #0d9488;
+    --new-secondary-light: #5eead4;
+
+    /* 语义色 */
+    --new-success: #16a34a;
+    --new-warning: #ea580c;
+    --new-error: #dc2626;
+    --new-info: #525252;
+
+    /* 亮色背景 */
+    --new-bg: #f8f8f8;
+    --new-bg-paper: #ffffff;
+    --new-bg-elevated: #ffffff;
+    --new-text-primary: #171717;
+    --new-text-secondary: #525252;
+    --new-text-disabled: #a3a3a3;
+    --new-border: #e5e5e5;
+    --new-border-hover: #d4d4d4;
+
+    /* 暗色背景 */
+    --new-dark-bg: #0a0a0a;
+    --new-dark-paper: #171717;
+    --new-dark-elevated: #1f1f1f;
+    --new-dark-text-primary: #f5f5f5;
+    --new-dark-text-secondary: #a3a3a3;
+    --new-dark-border: rgba(163, 163, 163, 0.12);
+
+    /* 圆角 */
+    --new-radius-sm: 8px;
+    --new-radius-md: 14px;
+    --new-radius-lg: 20px;
+    --new-radius-xl: 24px;
+
+    /* 阴影 - 简洁轻柔 */
+    --new-shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+    --new-shadow-md: 0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.03);
+    --new-shadow-lg: 0 12px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.03);
+
+    /* 侧边栏 */
+    --new-sidebar-bg: #171717;
+    --new-sidebar-hover: rgba(255,255,255,0.04);
+    --new-sidebar-active: rgba(64,64,64,0.2);
+    --new-sidebar-active-border: #737373;
+
+    /* ===== 旧方案令牌 ===== */
+    --old-primary: #7c3aed;
+    --old-primary-light: #a78bfa;
+    --old-bg: #fafafa;
+    --old-bg-paper: #ffffff;
+    --old-text-primary: rgba(0,0,0,0.8);
+    --old-text-secondary: rgba(0,0,0,0.6);
+    --old-border: rgba(124,58,237,0.08);
+    --old-sidebar-bg: #1E1A3E;
+    --old-dark-bg: #0f0f23;
+    --old-dark-paper: #1a1b3a;
+    --old-dark-card: #1e1b4b;
+
+    /* 字体 */
+    --new-font: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+    --old-font: 'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--new-font);
+    background: #f0f0f0;
+    color: #1a1a1a;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ====== 页面头部 ====== */
+  .page-header {
+    background: #171717;
+    color: white;
+    padding: 48px 40px 40px;
+    text-align: center;
+  }
+  .page-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 8px;
+    font-family: var(--new-font);
+  }
+  .page-header p {
+    font-size: 1rem;
+    color: #a3a3a3;
+    font-weight: 400;
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.08);
+    color: #d4d4d4;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+
+  /* ====== 容器 ====== */
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  /* ====== Section 标题 ====== */
+  .section-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #171717;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+  .section-desc {
+    font-size: 0.9rem;
+    color: #737373;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  /* ====== 对比网格 ====== */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 48px;
+  }
+  @media (max-width: 768px) {
+    .compare-grid { grid-template-columns: 1fr; }
+  }
+
+  .compare-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e5e5e5;
+  }
+  .compare-label {
+    padding: 14px 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .compare-label.old {
+    background: #fef3c7;
+    color: #92400e;
+    border-bottom: 1px solid #fde68a;
+  }
+  .compare-label.new {
+    background: #f5f5f5;
+    color: #404040;
+    border-bottom: 1px solid #e5e5e5;
+  }
+  .compare-label .material-icons-round { font-size: 18px; }
+  .compare-body { padding: 24px; }
+
+  /* ====== 色板 ====== */
+  .color-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .color-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .color-swatch {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .color-name {
+    font-size: 0.7rem;
+    color: #737373;
+    font-weight: 500;
+    text-align: center;
+    max-width: 64px;
+  }
+  .color-hex {
+    font-size: 0.65rem;
+    color: #a3a3a3;
+    font-family: 'SF Mono', monospace;
+  }
+
+  /* ====== 字体展示 ====== */
+  .font-demo { padding: 4px 0; }
+  .font-demo h2 {
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .font-demo p { margin-bottom: 8px; }
+  .font-label {
+    font-size: 0.7rem;
+    color: #a3a3a3;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .chinese-demo {
+    background: #fafafa;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 12px;
+    border: 1px solid #e5e5e5;
+  }
+
+  /* ====== 组件展示 ====== */
+  .components-showcase { display: flex; flex-direction: column; gap: 20px; }
+
+  /* 按钮 */
+  .btn-group { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .btn {
+    padding: 9px 20px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: var(--new-font);
+    letter-spacing: 0.01em;
+  }
+  .btn.primary-old {
+    background: var(--old-primary);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(124,58,237,0.2);
+  }
+  .btn.outlined-old {
+    background: transparent;
+    color: var(--old-primary);
+    border: 1.5px solid var(--old-primary);
+  }
+  .btn.primary-new {
+    background: var(--new-primary);
+    color: white;
+  }
+  .btn.outlined-new {
+    background: transparent;
+    color: var(--new-primary);
+    border: 1.5px solid #d4d4d4;
+  }
+  .btn.secondary-new {
+    background: #f5f5f5;
+    color: #404040;
+    border: 1px solid #e5e5e5;
+  }
+  .btn.sm { padding: 6px 14px; font-size: 0.8rem; border-radius: 10px; }
+  .btn.lg { padding: 12px 28px; font-size: 1rem; border-radius: 14px; }
+
+  /* 卡片 */
+  .demo-card {
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .demo-card.old {
+    background: var(--old-bg-paper);
+    border: 1px solid var(--old-border);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  }
+  .demo-card.new {
+    background: var(--new-bg-paper);
+    border: 1px solid var(--new-border);
+    box-shadow: var(--new-shadow-sm);
+  }
+  .demo-card h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+  .demo-card p {
+    font-size: 0.85rem;
+    color: #737373;
+    line-height: 1.6;
+  }
+  .card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* 输入框 */
+  .input-demo { display: flex; flex-direction: column; gap: 12px; }
+  .demo-input {
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-family: var(--new-font);
+    outline: none;
+    width: 100%;
+  }
+  .demo-input.old {
+    border: 1.5px solid rgba(0,0,0,0.23);
+    background: white;
+  }
+  .demo-input.old:focus { border-color: var(--old-primary); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+  .demo-input.new {
+    border: 1.5px solid var(--new-border);
+    background: white;
+  }
+  .demo-input.new:focus { border-color: var(--new-primary); box-shadow: 0 0 0 3px rgba(64,64,64,0.08); }
+
+  /* 标签 */
+  .chip-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    padding: 5px 14px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .chip.old {
+    background: rgba(124,58,237,0.1);
+    color: var(--old-primary);
+    border-radius: 8px;
+    border: 1px solid rgba(124,58,237,0.15);
+  }
+  .chip.new-primary {
+    background: #f5f5f5;
+    color: #404040;
+    border-radius: 20px;
+    border: 1px solid #e5e5e5;
+  }
+  .chip.new-success {
+    background: #f0fdf4;
+    color: var(--new-success);
+    border-radius: 20px;
+    border: 1px solid #bbf7d0;
+  }
+  .chip.new-warning {
+    background: #fff7ed;
+    color: var(--new-warning);
+    border-radius: 20px;
+    border: 1px solid #fed7aa;
+  }
+  .chip.new-neutral {
+    background: #fafafa;
+    color: #525252;
+    border-radius: 20px;
+    border: 1px solid #e5e5e5;
+  }
+
+  /* Alert */
+  .demo-alert {
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+  }
+  .demo-alert .material-icons-round { font-size: 20px; }
+  .demo-alert.new-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+  .demo-alert.new-error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+  .demo-alert.new-info { background: #f5f5f5; color: #404040; border: 1px solid #e5e5e5; }
+
+  /* ====== 布局预览 ====== */
+  .layout-preview {
+    display: flex;
+    border-radius: 16px;
+    overflow: hidden;
+    height: 400px;
+    border: 1px solid #e5e5e5;
+    box-shadow: var(--new-shadow-sm);
+  }
+  .layout-sidebar {
+    width: 220px;
+    min-width: 220px;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .layout-sidebar.old { background: var(--old-sidebar-bg); }
+  .layout-sidebar.new { background: var(--new-sidebar-bg); }
+  .sidebar-brand {
+    padding: 0 20px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 12px;
+  }
+  .sidebar-brand span {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.02em;
+  }
+  .sidebar-label {
+    padding: 8px 20px 6px;
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.4);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    margin: 2px 10px;
+    border-radius: 10px;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .sidebar-item .material-icons-round { font-size: 19px; }
+  .sidebar-item.active.old {
+    background: rgba(255,255,255,0.1);
+    color: white;
+  }
+  .sidebar-item.active.new {
+    background: rgba(255,255,255,0.1);
+    color: #e5e5e5;
+    border-left: 3px solid #737373;
+    padding-left: 13px;
+  }
+  .layout-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .layout-topbar {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-bottom: 1px solid;
+  }
+  .layout-topbar.old {
+    background: var(--old-bg-paper);
+    color: var(--old-text-primary);
+    border-color: rgba(0,0,0,0.08);
+  }
+  .layout-topbar.new {
+    background: var(--new-bg-paper);
+    color: var(--new-text-primary);
+    border-color: var(--new-border);
+  }
+  .layout-content {
+    flex: 1;
+    padding: 20px;
+    overflow: hidden;
+  }
+  .layout-content.old { background: var(--old-bg); }
+  .layout-content.new { background: var(--new-bg); }
+  .mini-card {
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .mini-card.old {
+    background: white;
+    border: 1px solid var(--old-border);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+  }
+  .mini-card.new {
+    background: white;
+    border: 1px solid var(--new-border);
+    box-shadow: var(--new-shadow-sm);
+  }
+  .mini-card h5 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .mini-card.old h5 { color: var(--old-primary); }
+  .mini-card.new h5 { color: var(--new-primary); }
+  .mini-card p { font-size: 0.78rem; color: #737373; line-height: 1.5; }
+  .mini-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .mini-stat {
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+  .mini-stat.old { background: rgba(124,58,237,0.05); border: 1px solid var(--old-border); }
+  .mini-stat.new { background: #fafafa; border: 1px solid #e5e5e5; }
+  .mini-stat .num {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .mini-stat.old .num { color: var(--old-primary); }
+  .mini-stat.new .num { color: var(--new-primary); }
+  .mini-stat .label { font-size: 0.7rem; color: #a3a3a3; font-weight: 500; margin-top: 2px; }
+
+  /* ====== 暗色模式预览 ====== */
+  .dark-preview {
+    border-radius: 16px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .dark-preview.old { background: var(--old-dark-bg); }
+  .dark-preview.new { background: var(--new-dark-bg); }
+  .dark-card {
+    border-radius: 14px;
+    padding: 18px;
+  }
+  .dark-card.old {
+    background: var(--old-dark-card);
+    border: 1px solid rgba(139,92,246,0.15);
+  }
+  .dark-card.new {
+    background: var(--new-dark-paper);
+    border: 1px solid var(--new-dark-border);
+  }
+  .dark-card h5 { font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
+  .dark-card.old h5 { color: #a78bfa; }
+  .dark-card.new h5 { color: #d4d4d4; }
+  .dark-card p { font-size: 0.82rem; line-height: 1.6; }
+  .dark-card.old p { color: rgba(203,213,225,0.8); }
+  .dark-card.new p { color: var(--new-dark-text-secondary); }
+  .dark-btn {
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    font-family: var(--new-font);
+  }
+  .dark-btn.old { background: #8b5cf6; color: white; }
+  .dark-btn.new { background: #404040; color: white; }
+  .dark-input {
+    padding: 9px 14px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-family: var(--new-font);
+    outline: none;
+    width: 100%;
+  }
+  .dark-input.old {
+    background: rgba(30,27,75,0.6);
+    border: 1.5px solid rgba(139,92,246,0.2);
+    color: #f1f5f9;
+  }
+  .dark-input.new {
+    background: rgba(23,23,23,0.8);
+    border: 1.5px solid var(--new-dark-border);
+    color: var(--new-dark-text-primary);
+  }
+  .dark-chip-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .dark-chip {
+    padding: 4px 12px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    border-radius: 16px;
+  }
+  .dark-chip.old { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.2); }
+  .dark-chip.new-1 { background: rgba(64,64,64,0.3); color: #d4d4d4; border: 1px solid rgba(163,163,163,0.2); }
+  .dark-chip.new-2 { background: rgba(52,211,153,0.1); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.15); }
+
+  /* ====== 设计令牌表 ====== */
+  .token-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+  }
+  .token-table th {
+    text-align: left;
+    padding: 10px 14px;
+    background: #fafafa;
+    font-weight: 600;
+    color: #525252;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #e5e5e5;
+  }
+  .token-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f5f5f5;
+    color: #404040;
+  }
+  .token-table tr:last-child td { border-bottom: none; }
+  .token-old { color: #92400e; background: #fffbeb; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; font-family: 'SF Mono', monospace; }
+  .token-new { color: #404040; background: #f5f5f5; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; font-family: 'SF Mono', monospace; }
+  .token-arrow { color: #a3a3a3; padding: 0 4px; }
+
+  /* ====== 分隔 ====== */
+  .divider {
+    height: 1px;
+    background: #e5e5e5;
+    margin: 48px 0;
+  }
+
+  /* ====== 底部总结 ====== */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .summary-item {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--new-shadow-sm);
+  }
+  .summary-item .material-icons-round {
+    font-size: 28px;
+    color: var(--new-primary);
+    margin-bottom: 12px;
+  }
+  .summary-item h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #171717;
+    margin-bottom: 6px;
+  }
+  .summary-item p { font-size: 0.82rem; color: #737373; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<!-- ====== 页面头 ====== -->
+<div class="page-header">
+  <div class="badge">DESIGN PROPOSAL</div>
+  <h1>EchoSub 前端主题设计方案</h1>
+  <p>简洁实用 · 中文优化 · 圆润柔和 — 新旧方案对比预览</p>
+</div>
+
+<div class="container">
+
+  <!-- ====== 1. 配色对比 ====== -->
+  <div class="section-title">1. 配色体系</div>
+  <div class="section-desc">从紫色系调整为中性暖灰色系，去除蓝色，降低视觉干扰，提升专业感和阅读舒适度。语义色保持直觉辨识度。</div>
+
+  <div class="compare-grid">
+    <div class="compare-card">
+      <div class="compare-label old"><span class="material-icons-round">history</span>当前方案</div>
+      <div class="compare-body">
+        <div class="font-label">主色 & 辅助色</div>
+        <div class="color-row">
+          <div class="color-chip"><div class="color-swatch" style="background:#7c3aed"></div><div class="color-name">Primary</div><div class="color-hex">#7c3aed</div></div>
+          <div class="color-chip"><div class="color-swatch" style="background:#a78bfa"></div><div class="color-name">Light</div><div class="color-hex">#a78bfa</div></div>
+          <div class="color-chip"><div class="color-swatch" style="background:#5b21b6"></div><div class="color-name">Dark</div><div class="color-hex">#5b21b6</div></div>
+          <div class="color-chip"><div class="color-swatch" style="background:#06b6d4"></div><div class="color-name">Secondary</div><div class="color-hex">#06b6d4</div></div>
+        </div>
+        <div class="font-label" style="margin-top:16px">背景色</div>
+        <div class="color-row">
+          <div class="color-chip"><div class="color-swatch" style="background:#fafafa; border-color:#ddd"></div><div class="color-name">Default</div><div class="color-hex">#fafafa</div></div>
+          <div class="color-chip"><div class="color-swatch" style="background:#ffffff; border-color:#ddd"></div><div class="color-name">Paper</div><div class="color-hex">#ffffff</div></div>
+          <div class="color-chip"><div class="color-swatch" style="background:#0f0f23"></div><div class="color-name">Dark BG</div><div class="color-hex">#0f0f23</div></div>
+          <div class="color-chip"><div class="color-swatch" style="background:#1e1b4b"></div><div class="color-name">Dark Card</div><div class="color-hex">#1e1b4b</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="compare-card">
+      <div class="compare-label new"><span class="material-icons-round">auto_awesome</span>新方案</div>
+      <div class="compare-body">
+        <div class="font-label">主色 & 辅助色</div>
+        <div class="color-row">
+          <div class="color-chip"><div class="color-swatch" style="background:#404040"></div><div class="color-name">Primary</div><div class="color-hex">#404040</div></div>
+          <div class="color-chip"><div class="color-swatch" style="background:#737373"></div><div class="color-name">Light</div><div class="color-hex">#737373</div></div>
+          <div class="color-chip"><div class="color-swatch" style="background:#262626"></div><div class="color-name">Dark</div><div class="color-hex">#262626</div></div>
+          <div class="color-chip"><div class="color-swatch" style="background:#0d9488"></div><div class="color-name">Secondary</div><div class="color-hex">#0d9488</div></div>
+        </div>
+        <div class="font-label" style="margin-top:16px">背景色</div>
+        <div class="color-row">
+          <div class="color-chip"><div class="color-swatch" style="background:#f8f8f8; border-color:#ddd"></div><div class="color-name">Default</div><div class="color-hex">#f8f8f8</div></div>
+          <div class="color-chip"><div class="color-swatch" style="background:#ffffff; border-color:#ddd"></div><div class="color-name">Paper</div><div class="color-hex">#ffffff</div></div>
+          <div class="color-chip"><div class="color-swatch" style="background:#0a0a0a"></div><div class="color-name">Dark BG</div><div class="color-hex">#0a0a0a</div></div>
+          <div class="color-chip"><div class="color-swatch" style="background:#171717"></div><div class="color-name">Dark Card</div><div class="color-hex">#171717</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 2. 字体对比 ====== -->
+  <div class="section-title">2. 字体排版</div>
+  <div class="section-desc">保留 Inter 作为英文/数字字体，新增 Noto Sans SC 优化中文显示。调整行高和字重，让中英文混排更协调。</div>
+
+  <div class="compare-grid">
+    <div class="compare-card">
+      <div class="compare-label old"><span class="material-icons-round">history</span>当前方案</div>
+      <div class="compare-body">
+        <div class="font-demo" style="font-family: 'Inter', 'Roboto', sans-serif">
+          <div class="font-label">Font: Inter, Roboto</div>
+          <h2 style="font-size:2rem; font-weight:700; color:#171717;">EchoSub 工作台</h2>
+          <p style="font-size:1rem; color:rgba(0,0,0,0.8); line-height:1.7; margin-top:8px;">这是正文内容的展示。当前字体在纯英文场景下表现优秀，但中文排版缺少专用字体支持。The quick brown fox jumps over the lazy dog.</p>
+          <div class="chinese-demo" style="font-family:'Inter','Roboto',sans-serif">
+            <div class="font-label">中文段落</div>
+            <p style="font-size:0.875rem; color:rgba(0,0,0,0.6); line-height:1.6;">EchoSub 是一款智能字幕工具，支持多种语言的自动识别与翻译。项目编号 #2024 的处理进度已达到 85%，预计 3 分钟后完成。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="compare-card">
+      <div class="compare-label new"><span class="material-icons-round">auto_awesome</span>新方案</div>
+      <div class="compare-body">
+        <div class="font-demo" style="font-family: var(--new-font)">
+          <div class="font-label">Font: Inter + Noto Sans SC</div>
+          <h2 style="font-size:1.875rem; font-weight:700; color:#171717; letter-spacing:-0.025em;">EchoSub 工作台</h2>
+          <p style="font-size:0.9375rem; color:#404040; line-height:1.75; margin-top:8px;">这是正文内容的展示。引入 Noto Sans SC 后中文笔画更清晰，行高微调让阅读更舒适。The quick brown fox jumps over the lazy dog.</p>
+          <div class="chinese-demo" style="font-family:var(--new-font); background:#fafafa; border-color:#e5e5e5;">
+            <div class="font-label">中文段落</div>
+            <p style="font-size:0.875rem; color:#525252; line-height:1.75;">EchoSub 是一款智能字幕工具，支持多种语言的自动识别与翻译。项目编号 #2024 的处理进度已达到 85%，预计 3 分钟后完成。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 3. 组件对比 ====== -->
+  <div class="section-title">3. 组件样式</div>
+  <div class="section-desc">按钮、卡片、输入框、标签等核心组件的视觉对比。新方案更克制、更透气，无渐变、无动画。</div>
+
+  <div class="compare-grid">
+    <!-- 按钮 -->
+    <div class="compare-card">
+      <div class="compare-label old"><span class="material-icons-round">history</span>当前按钮</div>
+      <div class="compare-body">
+        <div class="btn-group">
+          <button class="btn primary-old">主要按钮</button>
+          <button class="btn outlined-old">次要按钮</button>
+          <button class="btn primary-old sm">小按钮</button>
+        </div>
+        <div style="margin-top:16px">
+          <div class="chip-group">
+            <span class="chip old">处理中</span>
+            <span class="chip old">已完成</span>
+            <span class="chip old">中文</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="compare-card">
+      <div class="compare-label new"><span class="material-icons-round">auto_awesome</span>新按钮</div>
+      <div class="compare-body">
+        <div class="btn-group">
+          <button class="btn primary-new">主要按钮</button>
+          <button class="btn outlined-new">次要按钮</button>
+          <button class="btn secondary-new">中性按钮</button>
+          <button class="btn primary-new sm">小按钮</button>
+        </div>
+        <div style="margin-top:16px">
+          <div class="chip-group">
+            <span class="chip new-primary">处理中</span>
+            <span class="chip new-success">已完成</span>
+            <span class="chip new-warning">待审核</span>
+            <span class="chip new-neutral">中文</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 卡片 -->
+    <div class="compare-card">
+      <div class="compare-label old"><span class="material-icons-round">history</span>当前卡片</div>
+      <div class="compare-body">
+        <div class="demo-card old">
+          <h4 style="color:var(--old-primary)">项目：产品宣传视频</h4>
+          <p>视频时长 12:34，已识别 326 条字幕段落，准确率 96.8%</p>
+        </div>
+      </div>
+    </div>
+    <div class="compare-card">
+      <div class="compare-label new"><span class="material-icons-round">auto_awesome</span>新卡片</div>
+      <div class="compare-body">
+        <div class="demo-card new">
+          <h4 style="color:var(--new-text-primary)">项目：产品宣传视频</h4>
+          <p>视频时长 12:34，已识别 326 条字幕段落，准确率 96.8%</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 输入框 -->
+    <div class="compare-card">
+      <div class="compare-label old"><span class="material-icons-round">history</span>当前输入框</div>
+      <div class="compare-body">
+        <div class="input-demo">
+          <input class="demo-input old" placeholder="搜索项目..." />
+          <input class="demo-input old" value="EchoSub Pro 版本" />
+        </div>
+      </div>
+    </div>
+    <div class="compare-card">
+      <div class="compare-label new"><span class="material-icons-round">auto_awesome</span>新输入框</div>
+      <div class="compare-body">
+        <div class="input-demo">
+          <input class="demo-input new" placeholder="搜索项目..." />
+          <input class="demo-input new" value="EchoSub Pro 版本" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert -->
+    <div class="compare-card" style="grid-column: 1 / -1;">
+      <div class="compare-label new"><span class="material-icons-round">auto_awesome</span>新 Alert 组件</div>
+      <div class="compare-body" style="display:flex; flex-direction:column; gap:10px;">
+        <div class="demo-alert new-success"><span class="material-icons-round">check_circle</span>字幕识别已完成，共 326 条段落</div>
+        <div class="demo-alert new-info"><span class="material-icons-round">info</span>正在处理中，预计剩余 3 分钟</div>
+        <div class="demo-alert new-error"><span class="material-icons-round">error</span>文件格式不支持，请上传 MP4 或 MKV 格式</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 4. 整体布局预览 ====== -->
+  <div class="section-title">4. 整体布局预览</div>
+  <div class="section-desc">左侧边栏 + 顶栏 + 内容区的完整布局对比，展示侧边栏配色、内容区卡片和整体视觉层次。</div>
+
+  <div class="compare-grid">
+    <div class="compare-card" style="padding:0; overflow:hidden;">
+      <div class="compare-label old"><span class="material-icons-round">history</span>当前布局</div>
+      <div class="layout-preview">
+        <div class="layout-sidebar old">
+          <div class="sidebar-brand"><span>EchoSub</span></div>
+          <div class="sidebar-label">导航菜单</div>
+          <div class="sidebar-item active old"><span class="material-icons-round">dashboard</span>工作台</div>
+          <div class="sidebar-item"><span class="material-icons-round">folder</span>项目列表</div>
+          <div class="sidebar-item"><span class="material-icons-round">upload</span>新建任务</div>
+          <div class="sidebar-item"><span class="material-icons-round">tune</span>系统设置</div>
+        </div>
+        <div class="layout-main">
+          <div class="layout-topbar old">工作台</div>
+          <div class="layout-content old">
+            <div class="mini-stats">
+              <div class="mini-stat old"><div class="num">12</div><div class="label">进行中</div></div>
+              <div class="mini-stat old"><div class="num">86</div><div class="label">已完成</div></div>
+            </div>
+            <div class="mini-card old"><h5>最近项目</h5><p>产品宣传视频 — 处理进度 85%</p></div>
+            <div class="mini-card old"><h5>字幕翻译</h5><p>英文 → 中文，326 条段落</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="compare-card" style="padding:0; overflow:hidden;">
+      <div class="compare-label new"><span class="material-icons-round">auto_awesome</span>新布局</div>
+      <div class="layout-preview">
+        <div class="layout-sidebar new">
+          <div class="sidebar-brand"><span>EchoSub</span></div>
+          <div class="sidebar-label">导航菜单</div>
+          <div class="sidebar-item active new"><span class="material-icons-round">dashboard</span>工作台</div>
+          <div class="sidebar-item"><span class="material-icons-round">folder</span>项目列表</div>
+          <div class="sidebar-item"><span class="material-icons-round">upload</span>新建任务</div>
+          <div class="sidebar-item"><span class="material-icons-round">tune</span>系统设置</div>
+        </div>
+        <div class="layout-main">
+          <div class="layout-topbar new">工作台</div>
+          <div class="layout-content new">
+            <div class="mini-stats">
+              <div class="mini-stat new"><div class="num">12</div><div class="label">进行中</div></div>
+              <div class="mini-stat new"><div class="num">86</div><div class="label">已完成</div></div>
+            </div>
+            <div class="mini-card new"><h5>最近项目</h5><p>产品宣传视频 — 处理进度 85%</p></div>
+            <div class="mini-card new"><h5>字幕翻译</h5><p>英文 → 中文，326 条段落</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 5. 暗色模式 ====== -->
+  <div class="section-title">5. 暗色模式</div>
+  <div class="section-desc">暗色背景从紫蓝调整为纯中性深色，去除所有色彩倾向，让内容本身更突出。</div>
+
+  <div class="compare-grid">
+    <div class="compare-card">
+      <div class="compare-label old"><span class="material-icons-round">history</span>当前暗色</div>
+      <div class="compare-body" style="padding:0">
+        <div class="dark-preview old">
+          <div class="dark-card old">
+            <h5>字幕项目详情</h5>
+            <p>这是暗色模式下的内容展示，当前方案使用紫蓝色调背景。</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="dark-btn old">开始处理</button>
+            <input class="dark-input old" placeholder="搜索..." style="flex:1" />
+          </div>
+          <div class="dark-chip-group">
+            <span class="dark-chip old">处理中</span>
+            <span class="dark-chip old">中文</span>
+            <span class="dark-chip old">已翻译</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="compare-card">
+      <div class="compare-label new"><span class="material-icons-round">auto_awesome</span>新暗色</div>
+      <div class="compare-body" style="padding:0">
+        <div class="dark-preview new">
+          <div class="dark-card new">
+            <h5>字幕项目详情</h5>
+            <p>这是暗色模式下的内容展示，新方案使用纯中性深色背景，无色彩倾向。</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="dark-btn new">开始处理</button>
+            <input class="dark-input new" placeholder="搜索..." style="flex:1" />
+          </div>
+          <div class="dark-chip-group">
+            <span class="dark-chip new-1">处理中</span>
+            <span class="dark-chip new-2">已完成</span>
+            <span class="dark-chip new-1">中文</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 6. 设计令牌变更总结 ====== -->
+  <div class="section-title">6. 设计令牌变更总结</div>
+  <div class="section-desc">关键设计参数的新旧对比一览表。</div>
+
+  <div class="compare-card" style="margin-bottom:48px;">
+    <div class="compare-body" style="padding:0; overflow-x:auto;">
+      <table class="token-table">
+        <thead>
+          <tr><th>属性</th><th>当前值</th><th></th><th>新值</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Primary 主色</td><td><span class="token-old">#7c3aed</span></td><td class="token-arrow">→</td><td><span class="token-new">#404040</span></td><td>紫色 → 中性暖灰，无色彩倾向</td></tr>
+          <tr><td>Secondary 辅色</td><td><span class="token-old">#06b6d4</span></td><td class="token-arrow">→</td><td><span class="token-new">#0d9488</span></td><td>亮青 → 青绿，视觉更柔和</td></tr>
+          <tr><td>字体</td><td><span class="token-old">Inter, Roboto</span></td><td class="token-arrow">→</td><td><span class="token-new">Inter, Noto Sans SC</span></td><td>新增中文专用字体</td></tr>
+          <tr><td>H1 字号</td><td><span class="token-old">2.5rem</span></td><td class="token-arrow">→</td><td><span class="token-new">2.25rem</span></td><td>略微收缩，更紧凑</td></tr>
+          <tr><td>Body 行高</td><td><span class="token-old">1.7</span></td><td class="token-arrow">→</td><td><span class="token-new">1.75</span></td><td>微调，利于中文阅读</td></tr>
+          <tr><td>全局圆角</td><td><span class="token-old">12px</span></td><td class="token-arrow">→</td><td><span class="token-new">14px</span></td><td>更圆润</td></tr>
+          <tr><td>Card 圆角</td><td><span class="token-old">16px</span></td><td class="token-arrow">→</td><td><span class="token-new">20px</span></td><td>更圆润柔和</td></tr>
+          <tr><td>Chip 圆角</td><td><span class="token-old">8px</span></td><td class="token-arrow">→</td><td><span class="token-new">20px (全圆)</span></td><td>胶囊形状，更现代</td></tr>
+          <tr><td>侧边栏背景</td><td><span class="token-old">#1E1A3E</span></td><td class="token-arrow">→</td><td><span class="token-new">#171717</span></td><td>深紫 → 纯中性深色</td></tr>
+          <tr><td>暗色背景</td><td><span class="token-old">#0f0f23</span></td><td class="token-arrow">→</td><td><span class="token-new">#0a0a0a</span></td><td>去紫调，纯黑中性</td></tr>
+          <tr><td>暗色 Paper</td><td><span class="token-old">#1a1b3a</span></td><td class="token-arrow">→</td><td><span class="token-new">#171717</span></td><td>层次感更自然</td></tr>
+          <tr><td>渐变 & 动画</td><td><span class="token-old">有渐变、hover动画</span></td><td class="token-arrow">→</td><td><span class="token-new">全部移除</span></td><td>纯静态，简洁实用</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ====== 设计理念总结 ====== -->
+  <div class="section-title">设计理念总结</div>
+  <div class="section-desc" style="margin-bottom:20px;">本次调整的四个核心方向。</div>
+
+  <div class="summary-grid">
+    <div class="summary-item">
+      <span class="material-icons-round">palette</span>
+      <h4>色彩中性</h4>
+      <p>主色从紫色切换到中性暖灰，完全去除蓝色。降低视觉攻击性，以内容为中心。</p>
+    </div>
+    <div class="summary-item">
+      <span class="material-icons-round">translate</span>
+      <h4>中文优化</h4>
+      <p>引入 Noto Sans SC，中文笔画更清晰。行高微调至 1.75，中英文混排更舒适。</p>
+    </div>
+    <div class="summary-item">
+      <span class="material-icons-round">rounded_corner</span>
+      <h4>简洁实用</h4>
+      <p>去除所有渐变和hover动画，纯静态展示。一切以应用为主，功能优先。</p>
+    </div>
+    <div class="summary-item">
+      <span class="material-icons-round">air</span>
+      <h4>留白透气</h4>
+      <p>减少浓重阴影和高饱和边框，用更自然的层次和间距营造呼吸感。</p>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

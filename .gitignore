@@ -1,0 +1,149 @@
+# ============================================
+# Python
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyc
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+.python-version
+venv/
+.venv/
+ENV/
+env/
+
+# ============================================
+# Node.js / Frontend
+# ============================================
+node_modules/
+*/node_modules/
+.next/
+out/
+.nuxt*
+.cache/
+**/.cache/
+**/node_modules/.cache/
+.npm
+.rts2_cache_*/
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
+.npmrc
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.vite/
+coverage/
+.nyc_output/
+
+# ============================================
+# Environment & Config
+# ============================================
+.env
+.env.*
+!.env.example
+*.local
+
+# ============================================
+# Logs
+# ============================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ============================================
+# IDEs and Editors
+# ============================================
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.sublime-workspace
+*.sublime-project
+
+# ============================================
+# OS Files
+# ============================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ============================================
+# Database
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+*.rdb
+
+# ============================================
+# Media and large files
+# ============================================
+*.mp4
+*.mp3
+*.wav
+*.ogg
+*.webm
+*.mov
+*.avi
+*.mkv
+*.flac
+*.aac
+*.wma
+*.m4a
+*.m4v
+*.flv
+*.wmv
+*.vtt
+*.srt
+*.ass
+*.ssa
+*.scc
+*.sami
+*.stl
+*.ttml
+*.dfxp
+
+# ============================================
+# Project Specific
+# ============================================
+files/
+data/
+build/
+debug_files/
+dialogue_processing_output/
+scripts/
+api_test.py
+*.tmp
+*.temp
+*~
+
+# ============================================
+# Claude Code
+# ============================================
+.claude

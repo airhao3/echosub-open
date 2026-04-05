@@ -1,0 +1,68 @@
+# EchoSub - Open Source Video Translation
+# Quick start: docker-compose up -d
+# Then open http://localhost:8080
+# Configure API keys from Settings page — no .env editing needed
+# Default login: not required (open source single-user mode)
+
+x-backend-env: &backend-env
+  DATABASE_URL: ${DATABASE_URL:-sqlite:////data/echosub.db}
+  REDIS_HOST: redis
+  CELERY_BROKER_URL: redis://redis:6379/0
+  CELERY_RESULT_BACKEND: redis://redis:6379/0
+  SECRET_KEY: ${SECRET_KEY:-echosub-default-key-change-me}
+  STORAGE_BASE_DIR: /data
+  WHISPER_MODE: ${WHISPER_MODE:-api}
+  # Optional defaults — can be configured from web UI Settings page
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+  OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+  TRANSLATION_MODEL: ${TRANSLATION_MODEL:-}
+
+services:
+  echosub:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      <<: *backend-env
+    volumes:
+      - echosub_data:/data
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A celery_worker.celery_app worker --loglevel info --concurrency 1
+    environment:
+      <<: *backend-env
+    volumes:
+      - echosub_data:/data
+    depends_on:
+      - redis
+      - echosub
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - REACT_APP_API_URL=http://localhost:${PORT:-8000}
+      - REACT_APP_API_BASE_URL=http://localhost:${PORT:-8000}
+      - REACT_APP_API_VERSION=/api/v1
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    depends_on:
+      - echosub
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+
+volumes:
+  echosub_data:

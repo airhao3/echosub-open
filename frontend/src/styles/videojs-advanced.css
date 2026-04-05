@@ -1,0 +1,578 @@
+/* YouTube-Style VideoJS Player */
+
+/* 播放器容器 */
+.videojs-advanced-container {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative;
+  background: #000;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: none;
+}
+
+.videojs-advanced-container .video-js {
+  width: 100% !important;
+  height: 100% !important;
+  background: #000;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 视频元素 */
+.videojs-advanced-container .vjs-tech {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 8px;
+}
+
+/* 隐藏大播放按钮 */
+.videojs-advanced-container .vjs-big-play-button {
+  display: none !important;
+}
+
+/* 简洁风格控制栏 */
+.videojs-advanced-container .vjs-control-bar {
+  display: flex !important;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  height: 50px !important;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.85) 40%);
+  border: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: none;
+  overflow: visible !important;
+  padding: 8px 16px !important;
+  align-items: center;
+  justify-content: flex-start;
+  transition: all 0.2s ease;
+  pointer-events: auto !important;
+  gap: 8px;
+}
+
+.videojs-advanced-container .vjs-control-bar:hover {
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.9) 20%);
+}
+
+/* YouTube风格按钮 */
+.videojs-advanced-container .vjs-button {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  transition: all 0.1s ease;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 36px !important;
+  width: 36px !important;
+  height: 36px !important;
+  padding: 6px !important;
+  pointer-events: auto !important;
+  color: white !important;
+  font-size: 16px !important;
+  cursor: pointer !important;
+}
+
+.videojs-advanced-container .vjs-button .vjs-icon-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+}
+
+.videojs-advanced-container .vjs-button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 50% !important;
+}
+
+.videojs-advanced-container .vjs-button:focus {
+  outline: none !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 50% !important;
+}
+
+/* 播放暂停按钮 - 最左侧第一个 */
+.videojs-advanced-container .vjs-play-control {
+  width: 44px !important;
+  height: 44px !important;
+  margin: 0 16px 0 0 !important;
+  order: -10 !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+}
+
+/* 时间显示 - 第二个区域 */
+.videojs-advanced-container .vjs-current-time {
+  color: white !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  margin: 0 8px 0 0 !important;
+  white-space: nowrap !important;
+  order: 1 !important;
+  flex-shrink: 0 !important;
+}
+
+.videojs-advanced-container .vjs-time-divider {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 13px !important;
+  margin: 0 2px !important;
+  order: 2 !important;
+  flex-shrink: 0 !important;
+}
+
+.videojs-advanced-container .vjs-duration {
+  color: white !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  margin: 0 16px 0 0 !important;
+  white-space: nowrap !important;
+  order: 3 !important;
+  flex-shrink: 0 !important;
+}
+
+/* 音量控件 - 倒数第二个 */
+.videojs-advanced-container .vjs-volume-panel {
+  display: flex !important;
+  align-items: center !important;
+  width: 40px !important;
+  height: 40px !important;
+  margin: 0 8px 0 0 !important;
+  order: 5 !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+/* YouTube风格音量控件 */
+.videojs-advanced-container .vjs-volume-panel {
+  position: relative !important;
+}
+
+.videojs-advanced-container .vjs-mute-control {
+  width: 40px !important;
+  height: 40px !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 50% !important;
+  transition: background 0.2s ease !important;
+}
+
+.videojs-advanced-container .vjs-mute-control:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 隐藏默认的水平音量条 */
+.videojs-advanced-container .vjs-volume-control {
+  display: none !important;
+}
+
+/* 垂直音量条容器 */
+.videojs-advanced-container .vjs-volume-panel .vjs-volume-bar-vertical {
+  position: absolute !important;
+  bottom: 100% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 36px !important;
+  height: 110px !important;
+  background: rgba(28, 28, 28, 0.9) !important;
+  border-radius: 18px !important;
+  padding: 12px 0 !important;
+  margin-bottom: 4px !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: all 0.2s ease !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  z-index: 100 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: none !important;
+}
+
+/* 扩大hover区域包括音量条 */
+.videojs-advanced-container .vjs-volume-panel:hover .vjs-volume-bar-vertical,
+.videojs-advanced-container .vjs-volume-panel .vjs-volume-bar-vertical:hover,
+.videojs-advanced-container .vjs-volume-panel .vjs-volume-bar-vertical.vjs-volume-active {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* 扩大的hover区域 */
+.videojs-advanced-container .vjs-volume-panel::before {
+  content: '' !important;
+  position: absolute !important;
+  top: -120px !important;
+  left: -10px !important;
+  right: -10px !important;
+  bottom: -10px !important;
+  z-index: 99 !important;
+  pointer-events: auto !important;
+}
+
+/* 垂直音量条 */
+.videojs-advanced-container .vjs-volume-slider-vertical {
+  width: 4px !important;
+  height: 80px !important;
+  background: rgba(255, 255, 255, 0.3) !important;
+  border-radius: 2px !important;
+  position: relative !important;
+  cursor: pointer !important;
+}
+
+/* 音量级别显示 */
+.videojs-advanced-container .vjs-volume-level-vertical {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  background: var(--mui-palette-background-paper, white) !important;
+  border-radius: 2px !important;
+  transition: all 0.1s ease !important;
+}
+
+/* 音量滑块 */
+.videojs-advanced-container .vjs-volume-handle {
+  position: absolute !important;
+  width: 12px !important;
+  height: 12px !important;
+  background: var(--mui-palette-background-paper, white) !important;
+  border-radius: 50% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  top: -6px !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  transition: transform 0.1s ease !important;
+}
+
+.videojs-advanced-container .vjs-volume-handle:hover {
+  transform: translateX(-50%) scale(1.2) !important;
+}
+
+/* 强制隐藏所有不需要的按钮 */
+.videojs-advanced-container .vjs-playback-rates,
+.videojs-advanced-container .vjs-playback-rates-menu-button,
+.videojs-advanced-container .vjs-playback-rates-button,
+.videojs-advanced-container .vjs-rate-menu-button,
+.videojs-advanced-container .vjs-chapters-button,
+.videojs-advanced-container .vjs-descriptions-button,
+.videojs-advanced-container .vjs-subs-caps-button,
+.videojs-advanced-container .vjs-captions-button,
+.videojs-advanced-container .vjs-subtitles-button,
+.videojs-advanced-container .vjs-audio-button,
+.videojs-advanced-container .vjs-audio-track-button,
+.videojs-advanced-container .vjs-settings-menu-button,
+.videojs-advanced-container .vjs-quality-selector,
+.videojs-advanced-container .vjs-live-display,
+.videojs-advanced-container .vjs-seek-to-live-control,
+.videojs-advanced-container .vjs-custom-control-spacer,
+.videojs-advanced-container .vjs-skip-backward,
+.videojs-advanced-container .vjs-skip-forward,
+.videojs-advanced-container .vjs-skip-backward-undefined,
+.videojs-advanced-container .vjs-skip-forward-undefined {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+/* 全屏按钮 - 最后一个 */
+.videojs-advanced-container .vjs-fullscreen-control {
+  margin: 0 !important;
+  order: 6 !important;
+  flex-shrink: 0 !important;
+}
+
+/* YouTube风格菜单 */
+.videojs-advanced-container .vjs-menu {
+  background: rgba(28, 28, 28, 0.95) !important;
+  backdrop-filter: blur(8px);
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+  min-width: 120px !important;
+  padding: 8px 0 !important;
+  margin-bottom: 8px !important;
+}
+
+.videojs-advanced-container .vjs-menu-item {
+  color: white !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  font-family: 'Roboto', sans-serif !important;
+  padding: 6px 16px !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  transition: background-color 0.1s ease;
+  line-height: 1.4 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+}
+
+.videojs-advanced-container .vjs-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.videojs-advanced-container .vjs-menu-item.vjs-selected {
+  background: rgba(255, 255, 255, 0.15) !important;
+  font-weight: 500 !important;
+}
+
+/* 隐藏画中画按钮 */
+.videojs-advanced-container .vjs-picture-in-picture-control {
+  display: none !important;
+}
+
+/* 强制移除skip和倍速按钮的所有影响 */
+.videojs-advanced-container button[class*="skip-backward"],
+.videojs-advanced-container button[class*="skip-forward"],
+.videojs-advanced-container button[class*="playback-rates"],
+.videojs-advanced-container button[class*="playback-rate"],
+.videojs-advanced-container button[class*="rate-menu"],
+.videojs-advanced-container div[class*="playback-rate"],
+.videojs-advanced-container div[class*="playback-rates"],
+.videojs-advanced-container .vjs-control[class*="skip-backward"],
+.videojs-advanced-container .vjs-control[class*="skip-forward"],
+.videojs-advanced-container .vjs-control[class*="playback-rates"],
+.videojs-advanced-container .vjs-control[class*="playback-rate"],
+.videojs-advanced-container .vjs-control[class*="rate-menu"],
+.videojs-advanced-container .vjs-button[class*="skip-backward"],
+.videojs-advanced-container .vjs-button[class*="skip-forward"],
+.videojs-advanced-container .vjs-button[class*="playback-rates"],
+.videojs-advanced-container .vjs-button[class*="playback-rate"],
+.videojs-advanced-container .vjs-button[class*="rate-menu"],
+.videojs-advanced-container .vjs-menu-button[class*="playback-rates"],
+.videojs-advanced-container .vjs-menu-button[class*="playback-rate"] {
+  display: none !important;
+  visibility: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* 特别针对vjs-playback-rate类的强制隐藏 */
+.videojs-advanced-container .vjs-playback-rate.vjs-menu-button.vjs-menu-button-popup.vjs-control.vjs-button,
+.videojs-advanced-container .vjs-playback-rate.vjs-hidden,
+.videojs-advanced-container .vjs-playback-rate {
+  display: none !important;
+  visibility: hidden !important;
+  position: absolute !important;
+  left: -10000px !important;
+  top: -10000px !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  z-index: -1 !important;
+  overflow: hidden !important;
+}
+
+/* 加载指示器 */
+.videojs-advanced-container .vjs-loading-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 4;
+}
+
+.videojs-advanced-container .vjs-loading-spinner::after {
+  border-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.3) white transparent;
+  border-radius: 50%;
+}
+
+/* 海报图片 */
+.videojs-advanced-container .vjs-poster {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: 1;
+  border-radius: 8px;
+}
+
+/* 进度条 - 中间位置 */
+.videojs-advanced-container .vjs-progress-control {
+  flex: 1 !important;
+  margin: 0 8px !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  order: 4 !important;
+}
+
+.videojs-advanced-container .vjs-progress-holder {
+  height: 3px !important;
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-radius: 1.5px !important;
+  cursor: pointer !important;
+  transition: height 0.15s ease !important;
+}
+
+.videojs-advanced-container .vjs-progress-control:hover .vjs-progress-holder {
+  height: 5px !important;
+}
+
+.videojs-advanced-container .vjs-play-progress {
+  background: #1976d2 !important;
+  border-radius: 1.5px !important;
+  height: 3px !important;
+  transition: height 0.15s ease !important;
+}
+
+.videojs-advanced-container .vjs-progress-control:hover .vjs-play-progress {
+  height: 5px !important;
+}
+
+.videojs-advanced-container .vjs-load-progress {
+  background: rgba(255, 255, 255, 0.35) !important;
+  border-radius: 1.5px !important;
+}
+
+/* 进度条拖拽滑块 */
+.videojs-advanced-container .vjs-progress-holder .vjs-play-progress::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -7px;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  background: #1976d2;
+  border: 2px solid white;
+  border-radius: 50%;
+  opacity: 0;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.videojs-advanced-container .vjs-progress-control:hover .vjs-play-progress::before {
+  opacity: 1;
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* 确保所有控件可交互 */
+.videojs-advanced-container .vjs-control-bar > * {
+  pointer-events: auto !important;
+}
+
+/* 字幕动画效果 */
+@keyframes subtitleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 样式设置按钮 - 高级设计 */
+.videojs-advanced-style-button {
+  backdrop-filter: blur(20px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  width: 44px;
+  height: 44px;
+}
+
+.videojs-advanced-style-button:hover {
+  backdrop-filter: blur(24px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  transform: scale(1.05);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .videojs-advanced-container .vjs-control-bar {
+    height: 44px !important;
+    padding: 6px 8px 8px 8px;
+  }
+  
+  .videojs-advanced-container .vjs-button {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+  }
+  
+  .videojs-advanced-container .vjs-play-control {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  
+  .videojs-advanced-container .vjs-current-time,
+  .videojs-advanced-container .vjs-duration {
+    font-size: 11px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .videojs-advanced-container .vjs-control-bar {
+    height: 40px !important;
+    gap: 4px;
+  }
+  
+  .videojs-advanced-container .vjs-button {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+  }
+  
+  .videojs-advanced-container .vjs-play-control {
+    width: 32px !important;
+    height: 32px !important;
+  }
+}
