@@ -39,15 +39,15 @@ const getBaseTheme = (mode: PaletteMode): ThemeOptions => ({
     mode,
     divider: mode === 'light' ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.08)',
     primary: {
-      main: mode === 'light' ? '#404040' : '#d4d4d4',
-      light: mode === 'light' ? '#737373' : '#e5e5e5',
-      dark: mode === 'light' ? '#262626' : '#a3a3a3',
+      main: mode === 'light' ? '#4A7C8A' : '#7AB8C9',
+      light: mode === 'light' ? '#6FA3B0' : '#9FD0DD',
+      dark: mode === 'light' ? '#2E5A66' : '#5B99AA',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: mode === 'light' ? '#8E8E93' : '#98989D',
-      light: mode === 'light' ? '#AEAEB2' : '#B0B0B5',
-      dark: mode === 'light' ? '#636366' : '#6C6C70',
+      main: mode === 'light' ? '#8E9EAB' : '#98A8B5',
+      light: mode === 'light' ? '#B0BEC5' : '#B8C8D0',
+      dark: mode === 'light' ? '#607D8B' : '#78909C',
       contrastText: '#ffffff',
     },
     error: {
@@ -77,13 +77,13 @@ const getBaseTheme = (mode: PaletteMode): ThemeOptions => ({
     ...(mode === 'light'
       ? {
         background: {
-          default: '#F5F5F7',
+          default: '#F7F8FA',
           paper: '#FFFFFF',
         },
         text: {
-          primary: '#1D1D1F',
-          secondary: '#86868B',
-          disabled: '#C7C7CC',
+          primary: '#2C3E50',
+          secondary: '#7F8C9B',
+          disabled: '#BDC3C7',
         },
       }
       : {
@@ -178,7 +178,7 @@ const getBaseTheme = (mode: PaletteMode): ThemeOptions => ({
           fontWeight: 500,
           letterSpacing: '0.01em',
           '&:focus-visible': {
-            outline: `2px solid ${mode === 'light' ? '#404040' : '#d4d4d4'}`,
+            outline: `2px solid ${mode === 'light' ? '#4A7C8A' : '#7AB8C9'}`,
             outlineOffset: '2px',
           },
         },
@@ -242,7 +242,7 @@ const getBaseTheme = (mode: PaletteMode): ThemeOptions => ({
             borderColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.22)',
           },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: mode === 'dark' ? '#d4d4d4' : '#404040',
+            borderColor: mode === 'dark' ? '#7AB8C9' : '#4A7C8A',
             borderWidth: '2px',
           },
           '&.Mui-error .MuiOutlinedInput-notchedOutline': {
@@ -264,15 +264,15 @@ const getBaseTheme = (mode: PaletteMode): ThemeOptions => ({
           borderRadius: '8px',
           fontWeight: 500,
           backgroundColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)',
-          color: mode === 'dark' ? '#F5F5F7' : '#1D1D1F',
+          color: mode === 'dark' ? '#F5F5F7' : '#2C3E50',
           border: 'none',
           '&:hover': {
             backgroundColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.07)',
           },
         },
         colorPrimary: {
-          backgroundColor: mode === 'dark' ? 'rgba(212, 212, 212, 0.15)' : 'rgba(64, 64, 64, 0.08)',
-          color: mode === 'dark' ? '#d4d4d4' : '#404040',
+          backgroundColor: mode === 'dark' ? 'rgba(122, 184, 201, 0.15)' : 'rgba(74, 124, 138, 0.08)',
+          color: mode === 'dark' ? '#7AB8C9' : '#4A7C8A',
         },
         colorSecondary: {
           backgroundColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)',
