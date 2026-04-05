@@ -27,7 +27,7 @@ class ExternalAPITranscriber:
         self.api_config = {
             "whisper_api": {
                 "name": "Whisper API",
-                "base_url": os.getenv("WHISPER_API_URL", "https://whisper.defaqman.com"),
+                "base_url": os.getenv("WHISPER_API_URL", ""),
                 "endpoint": "/api/v1/audio/transcriptions",
                 "method": "POST",
                 "headers": {},  # No auth required

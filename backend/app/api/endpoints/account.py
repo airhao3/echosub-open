@@ -29,7 +29,7 @@ DEFAULT_PREFERENCES = {
     "llm_temperature": _settings.TRANSLATION_TEMPERATURE,
     "llm_max_tokens": _settings.TRANSLATION_MAX_TOKENS,
     # Whisper config
-    "whisper_api_url": "https://whisper.defaqman.com",
+    "whisper_api_url": "",
     "whisper_api_key": "",
     "whisper_model": "whisper-large-v3-turbo",
 }
