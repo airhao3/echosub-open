@@ -413,16 +413,10 @@ class SubtitleProcessorService:
                         t = part_end
                     return result
 
-        # Fallback: equal time distribution
-        duration = end - start
-        part_dur = duration / len(parts)
-        result = []
-        t = start
-        for i, part in enumerate(parts):
-            part_end = t + part_dur if i < len(parts) - 1 else end
-            result.append((t, part_end, part))
-            t = part_end
-        return result
+        # Source and target split counts don't match — do NOT split.
+        # Keep the original timing from Whisper intact.
+        # Splitting with estimated time would cause misalignment.
+        return [(start, end, text)]
 
     def _split_long_subtitle(self, text: str, start: float, end: float) -> list:
         """

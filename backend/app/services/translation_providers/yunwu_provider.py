@@ -148,9 +148,17 @@ STYLE REQUIREMENTS:
 - PRESERVE the speaker's emotion, attitude, and tone: sarcasm stays sarcastic, anger stays angry, humor stays funny.
 - KEEP profanity and slang at equivalent intensity — do NOT soften or censor. "I don't give a shit" → "我他妈才不管" not "我不在乎".
 - Repeated phrases or emphasis must be reflected — "Not a nice guy. Not a nice guy." → preserve the repetition and weight.
-- Each subtitle line should be ≤16 Chinese characters when possible.
+- Keep translations concise for subtitle readability, but NEVER omit meaning to shorten text.
 - Proper nouns: transliterate on first use, keep consistent throughout.
 - NEVER use overly formal/literary Chinese for casual speech. No 翻译腔 (translationese).
+- Filler words and discourse markers must be translated naturally:
+  "like" → "就是说/就像/那种" (NOT literally "像")
+  "you know" → "你懂的/你知道吧" (casual) or omit if redundant
+  "so" → "所以/然后/就" depending on context (NOT always "所以")
+  "I mean" → "我的意思是/就是说"
+  "right?" → "对吧/是不是"
+  "well" → "嗯/那个/这个" or omit
+- Translate by MEANING and CONTEXT, not word-by-word.
 
 FORMAT: Preserve ALL [N] tags exactly. One translated line per input line. Output ONLY the translated lines."""
                 user_prompt_content = text

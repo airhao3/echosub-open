@@ -147,7 +147,6 @@ class WorkflowService:
             translation_files = self.translation_processor.perform_translation(
                 job, context, translation_input_path, proc_logger
             )
-            # Translation step progress is managed internally
 
             subtitle_files = self.subtitle_processor.generate_subtitles_for_all_languages(
                 job, context, translation_files, proc_logger
@@ -158,7 +157,10 @@ class WorkflowService:
 
             target_video_path = self.video_processor.create_final_output_video(job, context, subtitle_files, proc_logger)
 
-            # 9. File export and cleanup
+            # 9. AI QA — verify final subtitles against source
+            self._qa_check_subtitles(job, context, proc_logger)
+
+            # 10. File export and cleanup
             self._finalize_job_processing(job_id, context, proc_logger)
             
             # The workflow is now complete. The final status will be set automatically
@@ -258,6 +260,236 @@ class WorkflowService:
         proc_logger.start_stage(ProcessingStage.DUBBING, "Processing dubbing")
         proc_logger.log_info(f"🚧 Dubbing functionality is currently being implemented for job {job.id}")
         proc_logger.complete_stage(ProcessingStage.DUBBING, "Dubbing feature is coming soon")
+
+    def _qa_check_subtitles(self, job: Job, context: JobContext, proc_logger: ProcessingLogger):
+        """
+        AI QA pass on final subtitles: check completeness, accuracy, and consistency.
+        Reads aligned_chunks.json (source + translation), sends batches to LLM for review,
+        fixes any issues found, and rewrites subtitle files.
+        """
+        import json as _json
+
+        proc_logger.log_info("Starting AI QA check on final subtitles...")
+
+        try:
+            aligned_path = self.file_manager.get_file_path(context=context, file_type=FileType.ALIGNED_CHUNKS_JSON)
+            if not self.file_manager.exists(aligned_path):
+                proc_logger.log_warning("No aligned_chunks.json found, skipping QA")
+                return
+
+            data = self.file_manager.read_json(aligned_path)
+            segments = data.get('segments', [])
+            if not segments:
+                return
+
+            target_langs = [k.replace('text_', '') for k in segments[0].keys() if k.startswith('text_') and k != 'text']
+            if not target_langs:
+                proc_logger.log_warning("No translations found in aligned chunks, skipping QA")
+                return
+
+            # Global context for QA
+            global_analysis_path = self.file_manager.get_file_path(context=context, file_type=FileType.GLOBAL_ANALYSIS_JSON)
+            global_context = ""
+            if self.file_manager.exists(global_analysis_path):
+                ga = self.file_manager.read_json(global_analysis_path)
+                overview = ga.get('global_analysis', {}).get('content_overview', '')
+                domain = ga.get('global_analysis', {}).get('domain', '')
+                if overview:
+                    global_context = f"Content: {overview}\nDomain: {domain}"
+
+            any_fixes = False
+
+            for lang in target_langs:
+                text_key = f'text_{lang}'
+                proc_logger.log_info(f"QA checking language: {lang}")
+
+                # Sliding window with overlap for context continuity
+                # Window: 12 lines to review, 3 lines overlap on each side for context
+                REVIEW_SIZE = 12
+                OVERLAP = 3
+                STEP = REVIEW_SIZE
+                total = len(segments)
+                batch_num = 0
+
+                for window_start in range(0, total, STEP):
+                    batch_num += 1
+                    # Context window: overlap before + review lines + overlap after
+                    ctx_start = max(0, window_start - OVERLAP)
+                    review_end = min(window_start + REVIEW_SIZE, total)
+                    ctx_end = min(review_end + OVERLAP, total)
+
+                    # Build context lines (before)
+                    before_ctx = ""
+                    if ctx_start < window_start:
+                        before_lines = []
+                        for i in range(ctx_start, window_start):
+                            src = segments[i].get('text', '').strip()
+                            tgt = segments[i].get(text_key, '').strip()
+                            before_lines.append(f"  [{i+1}] {src} → {tgt}")
+                        before_ctx = "PREVIOUS CONTEXT (for reference only, do NOT fix these):\n" + '\n'.join(before_lines)
+
+                    # Build review lines
+                    review_lines = []
+                    for i in range(window_start, review_end):
+                        idx = i + 1
+                        src = segments[i].get('text', '').strip()
+                        tgt = segments[i].get(text_key, '').strip()
+                        review_lines.append(f"[{idx}] EN: {src}")
+                        review_lines.append(f"[{idx}] {lang.upper()}: {tgt}")
+                    qa_text = '\n'.join(review_lines)
+
+                    # Build context lines (after)
+                    after_ctx = ""
+                    if review_end < ctx_end:
+                        after_lines = []
+                        for i in range(review_end, ctx_end):
+                            src = segments[i].get('text', '').strip()
+                            tgt = segments[i].get(text_key, '').strip()
+                            after_lines.append(f"  [{i+1}] {src} → {tgt}")
+                        after_ctx = "NEXT CONTEXT (for reference only, do NOT fix these):\n" + '\n'.join(after_lines)
+
+                    prompt = f"""You are a professional subtitle QA reviewer.
+
+{f"CONTEXT: {global_context}" if global_context else ""}
+
+{before_ctx}
+
+SUBTITLES TO REVIEW (fix only these):
+{qa_text}
+
+{after_ctx}
+
+CHECK EACH LINE:
+1. COMPLETENESS: Does the translation cover ALL meaning from the source? Any omissions?
+2. ACCURACY: Is the meaning correct? No hallucination or wrong interpretation?
+3. TONE: Does it match the speaker's emotion? (casual/angry/funny/sarcastic)
+4. COHERENCE: Does the line flow naturally with the lines before and after it?
+5. CONTEXT FIT: Given the scene/topic, is the word choice appropriate?
+
+RULES:
+- Fix ONE line at a time — do NOT merge or split
+- The fix must match the SAME source line
+- Do NOT add filler words not in the source
+- Keep punctuation count similar to original
+- Consider the before/after context for coherence
+- Only fix REAL problems
+
+Return ONLY a JSON array of fixes. Empty [] if all acceptable.
+[{{"id": 1, "issue": "brief description", "fixed": "corrected translation"}}]
+JSON:"""
+
+                    try:
+                        resp = self.semantic_service.provider.translate(
+                            prompt, 'en', lang,
+                            metadata={"type": "content_scan", "max_tokens": 4000}
+                        )
+                        raw = str(resp.get("translated_text", "[]")).strip()
+                        fixes = self.semantic_service._clean_and_parse_json(raw, str(job.id), context="qa_check")
+
+                        if fixes and isinstance(fixes, list) and len(fixes) > 0:
+                            proc_logger.log_info(f"QA batch {batch_num}: found {len(fixes)} issues")
+                            for fix in fixes:
+                                fix_id = fix.get('id')
+                                fixed_text = fix.get('fixed', '')
+                                issue = fix.get('issue', '')
+                                if fix_id and fixed_text and isinstance(fix_id, int):
+                                    seg_idx = fix_id - 1
+                                    # Only fix lines within the review window
+                                    if window_start <= seg_idx < review_end:
+                                        old_text = segments[seg_idx].get(text_key, '')
+                                        segments[seg_idx][text_key] = fixed_text
+                                        proc_logger.log_info(f"  fix [{fix_id}] ({issue}): \"{old_text[:30]}\" → \"{fixed_text[:30]}\"")
+                                        any_fixes = True
+                        else:
+                            proc_logger.log_info(f"QA batch {batch_num}: all OK")
+
+                    except Exception as e:
+                        proc_logger.log_warning(f"QA batch {batch_num} error: {e}")
+                        continue
+
+            if any_fixes:
+                # Save updated aligned chunks
+                data['segments'] = segments
+                self.file_manager.write_json(aligned_path, data)
+                proc_logger.log_info(f"QA applied {sum(1 for _ in [1])} fixes. Rewriting subtitle files...")
+
+                # Rewrite SRT/VTT/JSON files directly from fixed aligned chunks
+                import re as _qa_re
+                for lang in target_langs:
+                    text_key = f'text_{lang}'
+                    srt_lines = []
+                    json_subs = []
+                    sub_num = 0
+
+                    for seg in segments:
+                        text = str(seg.get(text_key, '')).strip()
+                        if not text:
+                            continue
+                        start = float(seg.get('start', 0))
+                        end = float(seg.get('end', 0))
+
+                        # Split by punctuation (same logic as subtitle_processor)
+                        parts = _qa_re.split(r'(?<=[。！？，、；.!?,;:])\s*', text)
+                        parts = [p.strip() for p in parts if p.strip()]
+                        if len(parts) <= 1:
+                            parts = [(start, end, text)]
+                        else:
+                            # Use source word timestamps when available
+                            src_text = str(seg.get('text', '')).strip()
+                            seg_words = seg.get('words', [])
+                            src_parts = _qa_re.split(r'(?<=[.!?,;:])\s*', src_text)
+                            src_parts = [p.strip() for p in src_parts if p.strip()]
+                            if len(src_parts) == len(parts) and seg_words:
+                                result = []
+                                widx = 0
+                                for si, (sp, tp) in enumerate(zip(src_parts, parts)):
+                                    wc = len(sp.split())
+                                    ws = seg_words[widx].get('start', start) if widx < len(seg_words) else start
+                                    widx += wc
+                                    we = seg_words[widx-1].get('end', end) if widx-1 < len(seg_words) else end
+                                    if si == len(parts)-1: we = end
+                                    result.append((ws, we, tp))
+                                parts = result
+                            else:
+                                dur = (end - start) / len(parts)
+                                parts = [(start + i*dur, start + (i+1)*dur if i < len(parts)-1 else end, p) for i, p in enumerate(parts)]
+
+                        for s, e, t in parts:
+                            t = t.rstrip('.,;:!?…。，；：！？、')
+                            if not t: continue
+                            sub_num += 1
+                            # SRT
+                            def fmt(sec):
+                                h=int(sec//3600); m=int((sec%3600)//60); s_=int(sec%60); ms=int((sec%1)*1000)
+                                return f"{h:02d}:{m:02d}:{s_:02d},{ms:03d}"
+                            srt_lines.extend([str(sub_num), f"{fmt(s)} --> {fmt(e)}", t, ""])
+                            json_subs.append({"id": str(sub_num), "text": t, "startTime": s, "endTime": e})
+
+                    # Write files
+                    job_dir = self.file_manager._get_job_dir(context.user_id, context.job_id)
+                    srt_path = os.path.join(job_dir, "subtitles", f"{lang}.srt")
+                    vtt_path = os.path.join(job_dir, "subtitles_vtt", f"{lang}.vtt")
+                    json_path = os.path.join(job_dir, "subtitles_json", f"subtitle_{lang}.json")
+
+                    os.makedirs(os.path.dirname(srt_path), exist_ok=True)
+                    os.makedirs(os.path.dirname(vtt_path), exist_ok=True)
+                    os.makedirs(os.path.dirname(json_path), exist_ok=True)
+
+                    with open(srt_path, 'w', encoding='utf-8') as f:
+                        f.write('\n'.join(srt_lines))
+                    with open(vtt_path, 'w', encoding='utf-8') as f:
+                        vtt = "WEBVTT\n\n" + '\n'.join(srt_lines).replace(',', '.')
+                        f.write(vtt)
+                    import json as _json_mod
+                    with open(json_path, 'w', encoding='utf-8') as f:
+                        _json_mod.dump(json_subs, f, ensure_ascii=False, indent=2)
+
+                    proc_logger.log_info(f"QA: rewrote {sub_num} subtitles for {lang}")
+            else:
+                proc_logger.log_info("QA check passed — no issues found")
+
+        except Exception as e:
+            proc_logger.log_warning(f"QA check failed (non-critical): {e}")
 
     def _finalize_job_processing(self, job_id: int, context: JobContext, proc_logger: ProcessingLogger):
         """Finalize job processing - file export and cleanup"""

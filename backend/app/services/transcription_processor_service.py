@@ -78,10 +78,14 @@ class TranscriptionProcessorService:
             # Phase 1.5: Sentence Splitting (word-level)
             # Split Whisper output into proper sentences using
             # word timestamps, punctuation, and linguistic cues
+            # Adjust params based on video orientation
             # ============================================
             import json as _json
             json_content = self.file_manager.read_text(transcription_path)
             whisper_segments = _json.loads(json_content)
+
+            # Detect video orientation and adjust splitting params
+            self._adapt_params_to_video(job, context, proc_logger)
 
             sentences = self._split_into_sentences(whisper_segments, proc_logger)
             proc_logger.log_info(f"Sentence splitting: {len(sentences)} sentences from Whisper output")
@@ -169,6 +173,53 @@ class TranscriptionProcessorService:
         except Exception as e:
             proc_logger.log_error(f"Error in transcription processing: {str(e)}")
             raise
+
+    def _adapt_params_to_video(self, job, context, proc_logger):
+        """Detect video orientation and adjust sentence splitting params."""
+        try:
+            import subprocess
+            # Find source video
+            job_dir = self.file_manager._get_job_dir(context.user_id, context.job_id)
+            source_dir = os.path.join(job_dir, "source")
+            video_files = [f for f in os.listdir(source_dir) if f.endswith(('.mp4', '.mov', '.avi', '.mkv', '.webm'))] if os.path.isdir(source_dir) else []
+
+            if not video_files:
+                proc_logger.log_info("No video file found, using default params (landscape)")
+                return
+
+            video_path = os.path.join(source_dir, video_files[0])
+            probe = subprocess.run(
+                ['ffprobe', '-v', 'quiet', '-show_entries', 'stream=width,height',
+                 '-of', 'csv=p=0', video_path],
+                capture_output=True, text=True, timeout=10)
+
+            parts = probe.stdout.strip().split(',')
+            if len(parts) >= 2:
+                width, height = int(parts[0]), int(parts[1])
+                ratio = width / height if height > 0 else 1.78
+
+                if ratio < 0.8:
+                    # Portrait (TikTok/Reels) — short lines
+                    self._TARGET_WORDS = 8
+                    self._MAX_WORDS = 12
+                    self._MAX_DURATION = 4.0
+                    proc_logger.log_info(f"Portrait video ({width}x{height}) → TARGET={self._TARGET_WORDS}, MAX={self._MAX_WORDS}")
+                elif ratio < 1.2:
+                    # Square — medium lines
+                    self._TARGET_WORDS = 10
+                    self._MAX_WORDS = 15
+                    self._MAX_DURATION = 4.5
+                    proc_logger.log_info(f"Square video ({width}x{height}) → TARGET={self._TARGET_WORDS}, MAX={self._MAX_WORDS}")
+                else:
+                    # Landscape — long lines, higher flush threshold
+                    self._TARGET_WORDS = 15
+                    self._MAX_WORDS = 22
+                    self._MAX_DURATION = 6.0
+                    self._SOFT_MIN_WORDS = 8
+                    self._MIN_WORDS = 5
+                    proc_logger.log_info(f"Landscape video ({width}x{height}) → TARGET={self._TARGET_WORDS}, MAX={self._MAX_WORDS}, MIN_FLUSH=5")
+        except Exception as e:
+            proc_logger.log_warning(f"Video orientation detection failed: {e}, using defaults")
 
     # ============================================
     # Phase 1.5: Word-level sentence splitting
@@ -337,7 +388,7 @@ class TranscriptionProcessorService:
                     sentences.append(make_sentence(part))
 
         ALL_PUNCT = self._SENTENCE_ENDERS | self._SOFT_PUNCT
-        MIN_FLUSH = 3  # Don't flush if buf has fewer words than this
+        MIN_FLUSH = self._MIN_WORDS  # Use adaptive value based on video orientation
 
         for i, word in enumerate(all_words):
             wt = word.get('word', '').strip()

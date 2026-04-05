@@ -395,7 +395,7 @@ CRITICAL RULES:
 3. Sound like NATURAL {target_lang_name} speech — colloquial, not literary
 4. Match the speaker's tone: casual→casual, angry→angry, funny→funny
 5. Keep swear words at equal intensity, do NOT censor or soften
-6. Each line ≤16 characters for {target_lang_name} when possible
+6. Keep concise but NEVER omit meaning — translate the COMPLETE sentence
 7. Proper nouns from terms list must be consistent
 
 SOURCE:
@@ -669,30 +669,28 @@ SOURCE:
         }
         """
         try:
-            # Load timing segments
-            seg_json_path = self.file_manager.get_file_path(
-                context=context, file_type=FileType.SEGMENTED_TRANSCRIPT_JSON)
+            # Load timing segments (with word timestamps)
+            job_dir = self.file_manager._get_job_dir(context.user_id, context.job_id)
+            seg_json_path = os.path.join(job_dir, "segmented_transcript", "transcript_segmented.json")
 
-            if not self.file_manager.exists(seg_json_path):
-                alt = self.file_manager.get_file_path(
-                    context=context, file_type=FileType.SEGMENTED_TRANSCRIPT
-                ).replace('.txt', '.json')
-                if self.file_manager.exists(alt):
-                    seg_json_path = alt
-                else:
-                    proc_logger.log_error("Segmented JSON not found, cannot build alignment")
-                    return
+            if not os.path.exists(seg_json_path):
+                proc_logger.log_error(f"Segmented JSON not found at {seg_json_path}, cannot build alignment")
+                return
 
             segments = self.file_manager.read_json(seg_json_path).get('segments', [])
 
             # Build base alignment list
             aligned = []
             for seg in segments:
-                aligned.append({
+                item = {
                     'start': seg.get('start', 0.0),
                     'end': seg.get('end', 0.0),
                     'text': seg.get('text', '').strip(),
-                })
+                }
+                # Carry word timestamps for precise subtitle timing
+                if seg.get('words'):
+                    item['words'] = seg['words']
+                aligned.append(item)
 
             proc_logger.log_info(f"Alignment base: {len(aligned)} segments")
 
